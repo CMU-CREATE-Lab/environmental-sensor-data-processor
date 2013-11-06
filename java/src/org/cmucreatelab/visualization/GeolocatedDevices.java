@@ -17,6 +17,8 @@ public abstract class GeolocatedDevices
       {
       String getName();
 
+      String getPrettyName();
+
       String getLatitude();
 
       String getLongitude();
@@ -56,6 +58,8 @@ public abstract class GeolocatedDevices
       {
       @NotNull
       private final String name;
+      @Nullable
+      private final String prettyName;
       @NotNull
       private final String latitude;
       @NotNull
@@ -63,7 +67,13 @@ public abstract class GeolocatedDevices
 
       public DeviceImpl(@NotNull final String name, @NotNull final String latitude, @NotNull final String longitude)
          {
+         this(name, null, latitude, longitude);
+         }
+
+      public DeviceImpl(@NotNull final String name, @Nullable final String prettyName, @NotNull final String latitude, @NotNull final String longitude)
+         {
          this.name = name;
+         this.prettyName = prettyName;
          this.latitude = latitude;
          this.longitude = longitude;
          }
@@ -72,6 +82,12 @@ public abstract class GeolocatedDevices
       public String getName()
          {
          return name;
+         }
+
+      @Nullable
+      public String getPrettyName()
+         {
+         return prettyName;
          }
 
       @NotNull
@@ -98,17 +114,21 @@ public abstract class GeolocatedDevices
             return false;
             }
 
-         final DeviceImpl that = (DeviceImpl)o;
+         final DeviceImpl device = (DeviceImpl)o;
 
-         if (!name.equals(that.name))
+         if (!latitude.equals(device.latitude))
             {
             return false;
             }
-         if (!latitude.equals(that.latitude))
+         if (!longitude.equals(device.longitude))
             {
             return false;
             }
-         if (!longitude.equals(that.longitude))
+         if (!name.equals(device.name))
+            {
+            return false;
+            }
+         if (prettyName != null ? !prettyName.equals(device.prettyName) : device.prettyName != null)
             {
             return false;
             }
@@ -120,6 +140,7 @@ public abstract class GeolocatedDevices
       public int hashCode()
          {
          int result = name.hashCode();
+         result = 31 * result + (prettyName != null ? prettyName.hashCode() : 0);
          result = 31 * result + latitude.hashCode();
          result = 31 * result + longitude.hashCode();
          return result;
