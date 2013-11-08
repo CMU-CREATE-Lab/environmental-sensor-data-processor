@@ -224,7 +224,7 @@ public class SpeckDataProcessor
          {
          minTime = Math.min(minTime, epochTimeInSeconds);
          maxTime = Math.max(maxTime, epochTimeInSeconds);
-         if (value <= minTime)
+         if (value <= minValue)
             {
             minValue = value;
             minValueTime = epochTimeInSeconds;
@@ -266,7 +266,7 @@ public class SpeckDataProcessor
          {
          try
             {
-            final File file = new File(outputDirectory, "speck_metadata.json");
+            final File file = new File(outputDirectory, "speck_12x12_metadata.json");
             final PrintWriter writer = new PrintWriter(new FileWriter(file));
             writer.println("{\"devices\" : [");
 
@@ -294,7 +294,7 @@ public class SpeckDataProcessor
 
       public BinaryGenerator(@NotNull final File outputDirectory) throws IOException
          {
-         final File dataFile = new File(outputDirectory, "speck_data.bin");
+         final File dataFile = new File(outputDirectory, "speck_12x12_data.bin");
          outputStream = new DataOutputStream(new FileOutputStream(dataFile));
          }
 
