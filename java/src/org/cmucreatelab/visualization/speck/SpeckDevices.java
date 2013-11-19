@@ -20,12 +20,13 @@ public class SpeckDevices extends GeolocatedDevices
             public void handleLine(@NotNull final String line, @NotNull final String[] values)
                {
                final String name = values[0];
-               final String prettyName = values[1];
-               final String row = values[2];
-               final String col = values[3];
-               if (name != null && row != null && col != null)
+               final String latitude = values[2];
+               final String longitude = values[3];
+               if (name != null && latitude != null && longitude != null)
                   {
-                  addDevice(new DeviceImpl(name, prettyName, row, col));
+                  final String prettyName = values[1];
+                  final String locationDetails = (values.length >= 5) ? values[4] : null;
+                  addDevice(new DeviceImpl(name, prettyName, latitude, longitude, locationDetails));
                   }
                }
             });

@@ -7,20 +7,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.apache.log4j.Logger;
 import org.cmucreatelab.io.CsvReader;
 import org.cmucreatelab.visualization.GeolocatedDevices;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public class SpeckDataProcessor
+public final class SpeckDataProcessor
    {
    private static final Logger LOG = Logger.getLogger(SpeckDataProcessor.class);
 
@@ -83,11 +80,11 @@ public class SpeckDataProcessor
    @NotNull
    private final File outputBinaryFile;
 
-   private SpeckDataProcessor(final int sampleIntervalSecs,
-                              @NotNull final File devicesFile,
-                              @NotNull final File inputDirectory,
-                              @NotNull final File outputMetadataFile,
-                              @NotNull final File outputBinaryFile)
+   SpeckDataProcessor(final int sampleIntervalSecs,
+                      @NotNull final File devicesFile,
+                      @NotNull final File inputDirectory,
+                      @NotNull final File outputMetadataFile,
+                      @NotNull final File outputBinaryFile)
       {
       this.sampleIntervalSecs = sampleIntervalSecs;
       this.devicesFile = devicesFile;
@@ -96,7 +93,7 @@ public class SpeckDataProcessor
       this.outputBinaryFile = outputBinaryFile;
       }
 
-   private void run() throws IOException
+   public final void run() throws IOException
       {
       final GeolocatedDevices geolocatedDevices = new SpeckDevices(devicesFile);
       if (!geolocatedDevices.isEmpty())
@@ -128,79 +125,6 @@ public class SpeckDataProcessor
          }
       }
 
-   private static final class SpeckCsvDataFileEventListener implements CsvReader.EventListener
-      {
-      private static interface EventListener
-         {
-         void handleBegin(@NotNull String name);
-
-         void handleLine(final int epochTimeInSeconds, final int value);
-
-         void handleEnd(final int numRecords);
-         }
-
-      private String name = null;
-      private int numRecords = 0;
-
-      @NotNull
-      private final Set<EventListener> eventListeners = new HashSet<EventListener>();
-
-      public void addEventListener(@Nullable final EventListener listener)
-         {
-         if (listener != null)
-            {
-            eventListeners.add(listener);
-            }
-         }
-
-      @Override
-      public final void handleBegin(@NotNull final File file)
-         {
-         final String filenameWithExtension = file.getName();
-         final int dotPosition = filenameWithExtension.lastIndexOf(".");
-         name = (dotPosition >= 0) ? filenameWithExtension.substring(0, dotPosition) : filenameWithExtension;
-         numRecords = 0;
-         for (final EventListener listener : eventListeners)
-            {
-            listener.handleBegin(name);
-            }
-         }
-
-      @Override
-      public final void handleHeader(@NotNull final String header, @NotNull final String[] fieldNames)
-         {
-         // nothing to do
-         }
-
-      @Override
-      public final void handleLine(@NotNull final String line, @NotNull final String[] values)
-         {
-         try
-            {
-            final int epochTimeInSeconds = Integer.parseInt(values[0]);
-            final int value = Integer.parseInt(values[1]);
-            numRecords++;
-            for (final EventListener listener : eventListeners)
-               {
-               listener.handleLine(epochTimeInSeconds, value);
-               }
-            }
-         catch (NumberFormatException ignored)
-            {
-            LOG.error("NumberFormatException while parsing line [" + line + "].  Skipping.");
-            }
-         }
-
-      @Override
-      public final void handleEnd(@NotNull final File file, final int numLines)
-         {
-         for (final EventListener listener : eventListeners)
-            {
-            listener.handleEnd(numRecords);
-            }
-         }
-      }
-
    private static final class MetadataGenerator implements SpeckCsvDataFileEventListener.EventListener
       {
       private final int sampleIntervalSecs;
@@ -223,9 +147,7 @@ public class SpeckDataProcessor
       private int maxValue = Integer.MIN_VALUE;
       private int recordOffset = 0;
 
-      public MetadataGenerator(final int sampleIntervalSecs,
-                               @NotNull final File outputFile,
-                               @NotNull final GeolocatedDevices geolocatedDevices)
+      private MetadataGenerator(final int sampleIntervalSecs, @NotNull final File outputFile, @NotNull final GeolocatedDevices geolocatedDevices)
          {
          this.sampleIntervalSecs = sampleIntervalSecs;
          this.outputFile = outputFile;
@@ -269,8 +191,10 @@ public class SpeckDataProcessor
             final StringBuilder sb = new StringBuilder("{");
             sb.append("\"name\":").append("\"").append(name).append("\",");
             sb.append("\"prettyName\":").append("\"").append(device.getPrettyName()).append("\",");
-            sb.append("\"row\":").append(device.getLatitude()).append(",");
-            sb.append("\"col\":").append(device.getLongitude()).append(",");
+            sb.append("\"latitude\":").append(device.getLatitude()).append(",");
+            sb.append("\"longitude\":").append(device.getLongitude()).append(",");
+            final String locationDetails = device.getLocationDetails();
+            sb.append("\"locationDetails\":").append("\"").append(locationDetails == null ? "" : locationDetails).append("\",");
             sb.append("\"minTime\":").append(minTime).append(",");
             sb.append("\"maxTime\":").append(maxTime).append(",");
             sb.append("\"minValue\":").append(minValue).append(",");

@@ -15,13 +15,20 @@ public abstract class GeolocatedDevices
 
    public static interface Device
       {
+      @NotNull
       String getName();
 
+      @Nullable
       String getPrettyName();
 
+      @NotNull
       String getLatitude();
 
+      @NotNull
       String getLongitude();
+
+      @Nullable
+      String getLocationDetails();
       }
 
    protected final void addDevice(@Nullable final Device device)
@@ -64,18 +71,35 @@ public abstract class GeolocatedDevices
       private final String latitude;
       @NotNull
       private final String longitude;
+      @Nullable
+      private final String locationDetails;
 
-      public DeviceImpl(@NotNull final String name, @NotNull final String latitude, @NotNull final String longitude)
+      public DeviceImpl(@NotNull final String name,
+                        @NotNull final String latitude,
+                        @NotNull final String longitude)
          {
          this(name, null, latitude, longitude);
          }
 
-      public DeviceImpl(@NotNull final String name, @Nullable final String prettyName, @NotNull final String latitude, @NotNull final String longitude)
+      public DeviceImpl(@NotNull final String name,
+                        @Nullable final String prettyName,
+                        @NotNull final String latitude,
+                        @NotNull final String longitude)
+         {
+         this(name, prettyName, latitude, longitude, null);
+         }
+
+      public DeviceImpl(@NotNull final String name,
+                        @Nullable final String prettyName,
+                        @NotNull final String latitude,
+                        @NotNull final String longitude,
+                        @Nullable final String locationDetails)
          {
          this.name = name;
          this.prettyName = prettyName;
          this.latitude = latitude;
          this.longitude = longitude;
+         this.locationDetails = locationDetails;
          }
 
       @NotNull
@@ -102,6 +126,12 @@ public abstract class GeolocatedDevices
          return longitude;
          }
 
+      @Nullable
+      public String getLocationDetails()
+         {
+         return locationDetails;
+         }
+
       @Override
       public boolean equals(final Object o)
          {
@@ -117,6 +147,10 @@ public abstract class GeolocatedDevices
          final DeviceImpl device = (DeviceImpl)o;
 
          if (!latitude.equals(device.latitude))
+            {
+            return false;
+            }
+         if (locationDetails != null ? !locationDetails.equals(device.locationDetails) : device.locationDetails != null)
             {
             return false;
             }
@@ -143,6 +177,7 @@ public abstract class GeolocatedDevices
          result = 31 * result + (prettyName != null ? prettyName.hashCode() : 0);
          result = 31 * result + latitude.hashCode();
          result = 31 * result + longitude.hashCode();
+         result = 31 * result + (locationDetails != null ? locationDetails.hashCode() : 0);
          return result;
          }
       }

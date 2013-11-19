@@ -60,15 +60,15 @@ public final class CsvReader
    @NotNull
    private final File file;
    private final boolean hasHeader;
-   private final int numFields;
+   private final int minimumNumFields;
    @NotNull
    private final Set<EventListener> eventListeners = new HashSet<EventListener>();
 
-   public CsvReader(@NotNull final File file, final boolean hasHeader, final int numFields)
+   public CsvReader(@NotNull final File file, final boolean hasHeader, final int minimumNumFields)
       {
       this.file = file;
       this.hasHeader = hasHeader;
-      this.numFields = numFields;
+      this.minimumNumFields = minimumNumFields;
       }
 
    public void addEventListener(@Nullable final EventListener listener)
@@ -113,7 +113,7 @@ public final class CsvReader
                final String[] fields = line.split(COMMA_DELIMITER);
 
                // ignore lines with too few fields
-               if (fields.length >= numFields)
+               if (fields.length >= minimumNumFields)
                   {
                   for (final EventListener listener : eventListeners)
                      {
