@@ -4,7 +4,7 @@
 DATASTORE_HOME=./datastore
 DATASTORE_USER_ID=43
 DATASTORE_CHANNEL_NAME=particles
-OUTPUT_DIR=./csv/speck
+OUTPUT_DIR=./csv/speck_12x12
 START_TIME=1383316440
 END_TIME=1383320580
 #===============================================================================

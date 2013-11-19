@@ -28,21 +28,19 @@ public class SpeckDataProcessor
 
    public static void main(final String[] args) throws IOException
       {
-      if (args.length < 3)
+      if (args.length < 6)
          {
-         System.err.println("ERROR: the Speck devices file and the input and output directories must all be specified.");
+         System.err.println("Usage: <sample interval seconds> <devices file> <input directory> <output directory> <output metadata filename> <output binary filename>");
          System.exit(1);
          }
-      final File devicesFile = new File(args[0]);
-      final File inputDirectory = new File(args[1]);
-      final File outputDirectory = new File(args[2]);
+      final int sampleIntervalSecs = Integer.parseInt(args[0]);
+      final File devicesFile = new File(args[1]);
+      final File inputDirectory = new File(args[2]);
+      final File outputDirectory = new File(args[3]);
 
       //noinspection ResultOfMethodCallIgnored
       outputDirectory.mkdirs();
 
-      System.out.println("Speck Devices File:    " + devicesFile.getCanonicalPath());
-      System.out.println("CSV Input Directory:   " + inputDirectory.getCanonicalPath());
-      System.out.println("Data Output Directory: " + outputDirectory.getCanonicalPath());
       if (!devicesFile.isFile())
          {
          System.err.println("The specified Speck devices file is invalid.  It is either not a file, or does not exist: " + inputDirectory.getCanonicalPath());
@@ -58,9 +56,20 @@ public class SpeckDataProcessor
          System.err.println("The specified output directory is invalid.  It is either not a directory, or does not exist: " + outputDirectory.getCanonicalPath());
          }
 
-      final SpeckDataProcessor dataProcessor = new SpeckDataProcessor(devicesFile, inputDirectory, outputDirectory);
+      final File outputMetadataFile = new File(outputDirectory, args[4]);
+      final File outputBinaryFile = new File(outputDirectory, args[5]);
+
+      System.out.println("Sample Interval Seconds:  " + sampleIntervalSecs);
+      System.out.println("Speck Devices File:       " + devicesFile.getCanonicalPath());
+      System.out.println("CSV Input Directory:      " + inputDirectory.getCanonicalPath());
+      System.out.println("Output Metadata File:     " + outputMetadataFile.getCanonicalPath());
+      System.out.println("Output Binary File:       " + outputBinaryFile.getCanonicalPath());
+
+      final SpeckDataProcessor dataProcessor = new SpeckDataProcessor(sampleIntervalSecs, devicesFile, inputDirectory, outputMetadataFile, outputBinaryFile);
       dataProcessor.run();
       }
+
+   private final int sampleIntervalSecs;
 
    @NotNull
    private final File devicesFile;
@@ -69,13 +78,22 @@ public class SpeckDataProcessor
    private final File inputDirectory;
 
    @NotNull
-   private final File outputDirectory;
+   private final File outputMetadataFile;
 
-   private SpeckDataProcessor(@NotNull final File devicesFile, @NotNull final File inputDirectory, @NotNull final File outputDirectory)
+   @NotNull
+   private final File outputBinaryFile;
+
+   private SpeckDataProcessor(final int sampleIntervalSecs,
+                              @NotNull final File devicesFile,
+                              @NotNull final File inputDirectory,
+                              @NotNull final File outputMetadataFile,
+                              @NotNull final File outputBinaryFile)
       {
+      this.sampleIntervalSecs = sampleIntervalSecs;
       this.devicesFile = devicesFile;
       this.inputDirectory = inputDirectory;
-      this.outputDirectory = outputDirectory;
+      this.outputMetadataFile = outputMetadataFile;
+      this.outputBinaryFile = outputBinaryFile;
       }
 
    private void run() throws IOException
@@ -84,8 +102,8 @@ public class SpeckDataProcessor
       if (!geolocatedDevices.isEmpty())
          {
          final SpeckCsvDataFileEventListener csvDataFileEventListener = new SpeckCsvDataFileEventListener();
-         final MetadataGenerator metadataGenerator = new MetadataGenerator(outputDirectory, geolocatedDevices);
-         final BinaryGenerator binaryGenerator = new BinaryGenerator(outputDirectory);
+         final MetadataGenerator metadataGenerator = new MetadataGenerator(sampleIntervalSecs, outputMetadataFile, geolocatedDevices);
+         final BinaryGenerator binaryGenerator = new BinaryGenerator(outputBinaryFile);
 
          csvDataFileEventListener.addEventListener(metadataGenerator);
          csvDataFileEventListener.addEventListener(binaryGenerator);
@@ -185,11 +203,14 @@ public class SpeckDataProcessor
 
    private static final class MetadataGenerator implements SpeckCsvDataFileEventListener.EventListener
       {
-      private static final int SAMPLE_INTERVAL_SECS = 1;    // Speck data is every second
+      private final int sampleIntervalSecs;
+
       @NotNull
-      private final File outputDirectory;
+      private final File outputFile;
+
       @NotNull
       private final GeolocatedDevices geolocatedDevices;
+
       @NotNull
       private final List<String> devicesJson;
 
@@ -202,9 +223,12 @@ public class SpeckDataProcessor
       private int maxValue = Integer.MIN_VALUE;
       private int recordOffset = 0;
 
-      public MetadataGenerator(@NotNull final File outputDirectory, @NotNull final GeolocatedDevices geolocatedDevices)
+      public MetadataGenerator(final int sampleIntervalSecs,
+                               @NotNull final File outputFile,
+                               @NotNull final GeolocatedDevices geolocatedDevices)
          {
-         this.outputDirectory = outputDirectory;
+         this.sampleIntervalSecs = sampleIntervalSecs;
+         this.outputFile = outputFile;
          this.geolocatedDevices = geolocatedDevices;
          devicesJson = new ArrayList<String>();
          }
@@ -253,7 +277,7 @@ public class SpeckDataProcessor
             sb.append("\"maxValue\":").append(maxValue).append(",");
             sb.append("\"minValueTime\":").append(minValueTime).append(",");
             sb.append("\"maxValueTime\":").append(maxValueTime).append(",");
-            sb.append("\"valueInterval\":").append(SAMPLE_INTERVAL_SECS).append(",");
+            sb.append("\"valueInterval\":").append(sampleIntervalSecs).append(",");
             sb.append("\"numRecords\":").append(numRecords).append(",");
             sb.append("\"recordOffset\":").append(recordOffset).append("}");
             devicesJson.add(sb.toString());
@@ -266,8 +290,7 @@ public class SpeckDataProcessor
          {
          try
             {
-            final File file = new File(outputDirectory, "speck_12x12_metadata.json");
-            final PrintWriter writer = new PrintWriter(new FileWriter(file));
+            final PrintWriter writer = new PrintWriter(new FileWriter(outputFile));
             writer.println("{\"devices\" : [");
 
             int i = 0;
@@ -292,10 +315,9 @@ public class SpeckDataProcessor
       @NotNull
       private final DataOutputStream outputStream;
 
-      public BinaryGenerator(@NotNull final File outputDirectory) throws IOException
+      public BinaryGenerator(@NotNull final File outputFile) throws IOException
          {
-         final File dataFile = new File(outputDirectory, "speck_12x12_data.bin");
-         outputStream = new DataOutputStream(new FileOutputStream(dataFile));
+         outputStream = new DataOutputStream(new FileOutputStream(outputFile));
          }
 
       @Override
