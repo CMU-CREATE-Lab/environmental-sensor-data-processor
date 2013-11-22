@@ -201,7 +201,6 @@ public final class SpeckDataProcessor
             sb.append("\"maxValue\":").append(maxValue).append(",");
             sb.append("\"minValueTime\":").append(minValueTime).append(",");
             sb.append("\"maxValueTime\":").append(maxValueTime).append(",");
-            sb.append("\"valueInterval\":").append(sampleIntervalSecs).append(",");
             sb.append("\"numRecords\":").append(numRecords).append(",");
             sb.append("\"recordOffset\":").append(recordOffset).append("}");
             devicesJson.add(sb.toString());
@@ -215,7 +214,7 @@ public final class SpeckDataProcessor
          try
             {
             final PrintWriter writer = new PrintWriter(new FileWriter(outputFile));
-            writer.println("{\"devices\" : [");
+            writer.println("{\"valueIntervalSecs\":" + sampleIntervalSecs + ",\"devices\" : [");
 
             int i = 0;
             for (final String json : devicesJson)

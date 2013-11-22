@@ -254,7 +254,6 @@ public class AirNowDataProcessor
             sb.append("\"maxValue\":").append(maxValue).append(",");
             sb.append("\"minValueTime\":").append(minValueTime).append(",");
             sb.append("\"maxValueTime\":").append(maxValueTime).append(",");
-            sb.append("\"valueInterval\":").append(SAMPLE_INTERVAL_SECS).append(",");
             sb.append("\"numRecords\":").append(numRecords).append(",");
             sb.append("\"recordOffset\":").append(recordOffset).append("}");
             devicesJson.add(sb.toString());
@@ -269,7 +268,7 @@ public class AirNowDataProcessor
             {
             final File file = new File(outputDirectory, "airnow_metadata.json");
             final PrintWriter writer = new PrintWriter(new FileWriter(file));
-            writer.println("{\"devices\" : [");
+            writer.println("{\"valueIntervalSecs\":" + SAMPLE_INTERVAL_SECS + ",\"devices\" : [");
 
             int i = 0;
             for (final String json : devicesJson)
