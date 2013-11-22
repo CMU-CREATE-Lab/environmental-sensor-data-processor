@@ -5,8 +5,8 @@ DATASTORE_HOME=./datastore
 DATASTORE_USER_ID=44
 DATASTORE_CHANNEL_NAME=particles
 OUTPUT_DIR=./csv/speck_scs_in_home
-START_TIME=1384347600
-END_TIME=1385009999
+START_TIME=1384368617
+END_TIME=1384897464
 #===============================================================================
 
 DATASTORE_BIN=${DATASTORE_HOME}/datastore
