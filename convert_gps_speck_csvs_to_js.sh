@@ -25,7 +25,7 @@ do
    echo 'DATA["'${speck_id}'"] = [' | cat >> ${OUTPUT_FILE}
    # Begin by using tail to skip the first line (the header), and then use awk
    # to check whether the GPS value is valid.  If so, print out select fields.
-   tail -n +2 ${csv_file} | awk -F, '{if ($5 == "true") print "["$1","$3","$6","$7",""\""$8"\"],";}' >> ${OUTPUT_FILE}
+   tail -n +2 ${csv_file} | awk -F, '{if ($5 == "true" || $5 == "TRUE") print "["$1","$3","$6","$7",""\""$8"\"],";}' >> ${OUTPUT_FILE}
    echo '[]];' >> ${OUTPUT_FILE}
    echo '' >> ${OUTPUT_FILE}
 done
