@@ -5,8 +5,8 @@ DATASTORE_HOME=./datastore
 DATASTORE_USER_ID=50
 DATASTORE_CHANNEL_NAME=particles
 OUTPUT_DIR=./csv/speck_vs_ion_speck
-START_TIME=1385130377
-END_TIME=1385408232
+START_TIME=1391783781
+END_TIME=1394032679
 #===============================================================================
 
 DATASTORE_BIN=${DATASTORE_HOME}/datastore
